@@ -12,6 +12,7 @@ A self-hosted read-it-later app inspired by Pocket. Save articles from the web, 
 - **Offline support** - PWA with service worker caching
 - **Dark mode** - Respects system preference
 - **Chrome extension** - Save articles with one click
+- **Android app** - Native app with offline reading
 
 ## Quick Start
 
@@ -50,6 +51,13 @@ make build
 4. Click the extension icon and configure your server URL
 5. On any webpage, click the extension icon to save
 
+### Android App
+
+1. Open the `android` folder in Android Studio
+2. Build and install on your device
+3. Open Settings and configure your server URL
+4. Share any URL from your browser to Pocket Clone
+
 ## API
 
 | Method | Endpoint | Description |
@@ -83,6 +91,7 @@ pocket-clone/
 │   └── storage/            # SQLite database layer
 ├── web/                    # Frontend (HTML/CSS/JS)
 ├── extension/              # Chrome extension
+├── android/                # Android app (Kotlin/Compose)
 ├── Dockerfile
 └── docker-compose.yml
 ```
