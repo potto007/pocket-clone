@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a2e">
+    <meta name="description" content="Your personal read-it-later app">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+    <title>Pocket Clone</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <div class="header-left">
+                <h1 class="logo">Pocket Clone</h1>
+            </div>
+            <div class="header-center">
+                <div class="search-box">
+                    <input type="search" id="search-input" placeholder="Search articles..." aria-label="Search">
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="add-btn" class="btn btn-primary" aria-label="Add article">+ Add</button>
+            </div>
+        </header>
+
+        <nav class="nav">
+            <button class="nav-btn active" data-view="unread">Unread</button>
+            <button class="nav-btn" data-view="archive">Archive</button>
+            <button class="nav-btn" data-view="tags">Tags</button>
+        </nav>
+
+        <main class="main">
+            <div id="article-list" class="article-list"></div>
+            <div id="reader" class="reader hidden"></div>
+        </main>
+
+        <!-- Add Article Modal -->
+        <div id="add-modal" class="modal hidden">
+            <div class="modal-content">
+                <h2>Save Article</h2>
+                <form id="add-form">
+                    <input type="url" id="url-input" placeholder="Paste URL here..." required autofocus>
+                    <div class="modal-actions">
+                        <button type="button" class="btn" id="cancel-add">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Offline indicator -->
+        <div id="offline-indicator" class="offline-indicator hidden">
+            You're offline. Some features may be limited.
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.error('Service Worker registration failed:', err));
+        }
+    </script>
+</body>
+</html>
