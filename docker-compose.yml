@@ -1,6 +1,6 @@
 services:
   pocket-clone:
-    build: .
+    image: pocket-clone
     container_name: pocket-clone
     ports:
       - "8080:8080"
