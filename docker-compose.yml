@@ -1,0 +1,12 @@
+services:
+  pocket-clone:
+    build: .
+    container_name: pocket-clone
+    ports:
+      - "8080:8080"
+    volumes:
+      - pocket-data:/data
+    restart: unless-stopped
+
+volumes:
+  pocket-data:

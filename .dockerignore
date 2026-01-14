@@ -1,0 +1,22 @@
+# Binary
+pocket-clone
+pocket-clone-*
+
+# Database
+*.db
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea/
+.vscode/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Misc
+*.md
