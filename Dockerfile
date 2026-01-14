@@ -10,12 +10,12 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 go build -tags "fts5" -ldflags="-s -w" -o pocket-clone .
+RUN CGO_ENABLED=1 go build -tags "fts5" -ldflags='-s -w -extldflags "-static"' -o pocket-clone .
 
 # Runtime stage
 FROM alpine:3.20
 
-RUN apk add --no-cache ca-certificates sqlite-libs
+RUN apk add --no-cache ca-certificates
 
 WORKDIR /app
 
