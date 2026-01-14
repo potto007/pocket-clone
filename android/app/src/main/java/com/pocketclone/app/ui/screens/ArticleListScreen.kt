@@ -6,7 +6,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,6 +15,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.pocketclone.app.data.api.Article
 import com.pocketclone.app.data.repository.ArticleRepository
+import com.pocketclone.app.ui.components.ArticleCard
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -133,6 +133,16 @@ fun ArticleListScreen(
                         IconButton(onClick = { showSearch = true }) {
                             Icon(Icons.Default.Search, "Search")
                         }
+                        IconButton(onClick = viewModel::refresh) {
+                            if (isRefreshing) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(24.dp),
+                                    strokeWidth = 2.dp
+                                )
+                            } else {
+                                Icon(Icons.Default.Refresh, "Refresh")
+                            }
+                        }
                         IconButton(onClick = onSettingsClick) {
                             Icon(Icons.Default.Settings, "Settings")
                         }
@@ -157,126 +167,48 @@ fun ArticleListScreen(
             }
         }
     ) { padding ->
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = viewModel::refresh,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (articles.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (showArchived) Icons.Default.Archive else Icons.Default.Article,
-                            contentDescription = null,
-                            modifier = Modifier.size(64.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Text(
-                            text = if (searchQuery.isNotEmpty()) "No results found"
-                                   else if (showArchived) "No archived articles"
-                                   else "No articles saved",
-                            style = MaterialTheme.typography.bodyLarge,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            } else {
-                LazyColumn(
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(
-                        items = articles,
-                        key = { it.id }
-                    ) { article ->
-                        SwipeableArticleCard(
-                            article = article,
-                            onClick = { onArticleClick(article.id) },
-                            onArchive = {
-                                if (showArchived) viewModel.unarchiveArticle(article.id)
-                                else viewModel.archiveArticle(article.id)
-                            },
-                            onDelete = { viewModel.deleteArticle(article.id) },
-                            isArchived = showArchived
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SwipeableArticleCard(
-    article: Article,
-    onClick: () -> Unit,
-    onArchive: () -> Unit,
-    onDelete: () -> Unit,
-    isArchived: Boolean,
-    modifier: Modifier = Modifier
-) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = { value ->
-            when (value) {
-                SwipeToDismissBoxValue.StartToEnd -> {
-                    onArchive()
-                    true
-                }
-                SwipeToDismissBoxValue.EndToStart -> {
-                    onDelete()
-                    true
-                }
-                else -> false
-            }
-        }
-    )
-
-    SwipeToDismissBox(
-        state = dismissState,
-        modifier = modifier,
-        backgroundContent = {
-            val direction = dismissState.dismissDirection
-            val color = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> MaterialTheme.colorScheme.primary
-                SwipeToDismissBoxValue.EndToStart -> MaterialTheme.colorScheme.error
-                else -> MaterialTheme.colorScheme.surface
-            }
-            val icon = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> if (isArchived) Icons.Default.Unarchive else Icons.Default.Archive
-                SwipeToDismissBoxValue.EndToStart -> Icons.Default.Delete
-                else -> Icons.Default.Archive
-            }
-            val alignment = when (direction) {
-                SwipeToDismissBoxValue.StartToEnd -> Alignment.CenterStart
-                else -> Alignment.CenterEnd
-            }
-
+        if (articles.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 16.dp),
-                contentAlignment = alignment
+                    .padding(padding),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Icon(
+                        imageVector = if (showArchived) Icons.Default.Archive else Icons.Default.Article,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = if (searchQuery.isNotEmpty()) "No results found"
+                               else if (showArchived) "No archived articles"
+                               else "No articles saved",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier.padding(padding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(
+                    items = articles,
+                    key = { it.id }
+                ) { article ->
+                    ArticleCard(
+                        article = article,
+                        onClick = { onArticleClick(article.id) }
+                    )
+                }
             }
         }
-    ) {
-        com.pocketclone.app.ui.components.ArticleCard(
-            article = article,
-            onClick = onClick
-        )
     }
 }
