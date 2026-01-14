@@ -18,7 +18,6 @@ A self-hosted read-it-later app inspired by Pocket. Save articles from the web, 
 ### Using Docker
 
 ```bash
-docker build -t pocket-clone .
 docker compose up -d
 ```
 

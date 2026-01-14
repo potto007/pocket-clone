@@ -1,6 +1,6 @@
 services:
   pocket-clone:
-    image: pocket-clone
+    image: ghcr.io/potto007/pocket-clone:latest
     container_name: pocket-clone
     ports:
       - "8080:8080"
