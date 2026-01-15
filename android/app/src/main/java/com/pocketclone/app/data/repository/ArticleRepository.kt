@@ -29,7 +29,15 @@ class ArticleRepository @Inject constructor(
     }
 
     suspend fun getArticle(id: Long): Article? {
-        return dao.getArticle(id)?.toArticle()
+        // Fetch full article from API (includes content)
+        return try {
+            val article = api.getArticle(id)
+            dao.insertArticle(ArticleEntity.fromArticle(article))
+            article
+        } catch (e: Exception) {
+            // Fallback to cached version
+            dao.getArticle(id)?.toArticle()
+        }
     }
 
     suspend fun refreshArticles(archived: Boolean? = null) {
