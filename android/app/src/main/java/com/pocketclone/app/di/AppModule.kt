@@ -15,6 +15,8 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -35,8 +37,35 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
+    fun provideOkHttpClient(dataStore: DataStore<Preferences>): OkHttpClient {
+        val dynamicBaseUrlInterceptor = Interceptor { chain ->
+            val originalRequest = chain.request()
+
+            // Get current server URL from DataStore
+            val serverUrl = runBlocking {
+                val prefs = dataStore.data.first()
+                prefs[SettingsKeys.SERVER_URL] ?: "http://10.0.2.2:8080"
+            }.removeSuffix("/")
+
+            val newUrl = serverUrl.toHttpUrlOrNull()
+            if (newUrl != null) {
+                val newRequest = originalRequest.newBuilder()
+                    .url(
+                        originalRequest.url.newBuilder()
+                            .scheme(newUrl.scheme)
+                            .host(newUrl.host)
+                            .port(newUrl.port)
+                            .build()
+                    )
+                    .build()
+                chain.proceed(newRequest)
+            } else {
+                chain.proceed(originalRequest)
+            }
+        }
+
         return OkHttpClient.Builder()
+            .addInterceptor(dynamicBaseUrlInterceptor)
             .addInterceptor(HttpLoggingInterceptor().apply {
                 level = HttpLoggingInterceptor.Level.BODY
             })
@@ -45,16 +74,10 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(
-        okHttpClient: OkHttpClient,
-        dataStore: DataStore<Preferences>
-    ): Retrofit {
-        val baseUrl = runBlocking {
-            val prefs = dataStore.data.first()
-            prefs[SettingsKeys.SERVER_URL] ?: "http://10.0.2.2:8080/"
-        }
+    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+        // Placeholder base URL - the interceptor will override it
         return Retrofit.Builder()
-            .baseUrl(baseUrl)
+            .baseUrl("http://localhost/")
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
